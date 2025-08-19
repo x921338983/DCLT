@@ -11,7 +11,6 @@ import argparse
 import json
 from functools import partial
 from timm.utils import accuracy, AverageMeter
-import numpy as np
 # from DCLT_I import LoR_VP_with_LoRA
 from DCLT_S import LoR_VP_with_LoRA
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -40,7 +39,7 @@ def parse_args():
     parser.add_argument('--output_size', type=int, default=224, help='image size before prompt')
     parser.add_argument('--downstream_mapping', type=str, default='lp', choices=['origin', 'fm', 'ilm', 'flm', 'lp'])
     parser.add_argument('--mapping_freq', type=int, default=1, help='frequency of label mapping')
-    parser.add_argument('--prompt_method', type=str, default='lor_vp', choices=['lor_vp', 'lor_vp_lora'])
+    parser.add_argument('--prompt_method', type=str, default='lor_vp', choices=['lor_vp', 'dclt'])
     parser.add_argument('--bar_width', type=int, default=4)
     parser.add_argument('--bar_height', type=int, default=224)
     parser.add_argument('--init_method', type=str, default='zero,normal')
@@ -70,7 +69,6 @@ def parse_args():
     parser.add_argument('--global_step', type=int, default=0)
     parser.add_argument('--save_path', type=str, default='ckpt/',
                         help='path to save the final model')
-    parser.add_argument('--exp_name', type=str, default='LoR-VP')
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
     parser.add_argument('--specified_path', type=str, default='')
     parser.add_argument('--lora_rank', type=str, default='4')
@@ -171,7 +169,7 @@ def apply_label_mapping(current_network_obj,
     mapping_sequence_tensor_to_pass = None
     network_for_initial_mapping_gen = current_network_obj
 
-    if args_obj.prompt_method == 'lor_vp_lora' and \
+    if args_obj.prompt_method == 'dclt' and \
             args_obj.downstream_mapping in ['ilm', 'flm'] and \
             use_pure_base_for_lora_ilm_flm_mapping and \
             pure_base_model_for_mapping is not None:
@@ -281,11 +279,8 @@ def main():
         pure_base_model_for_initial_mapping = None
         use_pure_for_lora_ilm_flm_mapping_experiment = True
 
-        if args.prompt_method == 'lor_vp_lora' and args.downstream_mapping in ['ilm', 'flm']:
+        if args.prompt_method == 'dclt' and args.downstream_mapping in ['ilm', 'flm']:
             if use_pure_for_lora_ilm_flm_mapping_experiment:
-                logger.info(
-                    "MAIN (EXPERIMENT ACTIVE): Creating a clean copy of base_model for initial mapping generation "
-                    "for 'lor_vp_lora' + 'ilm/flm' mode.")
                 pure_base_model_for_initial_mapping = copy.deepcopy(base_model)
                 pure_base_model_for_initial_mapping.to(args.device)
 
@@ -301,12 +296,8 @@ def main():
         visual_prompt_for_custom_network = None
 
         if args.prompt_method == 'lor_vp':
-            logger.info("使用 LoR_VP (baseline) 模式")
             visual_prompt_for_custom_network = LoR_VP(args, normalize=getattr(args, 'normalize', None)).to(args.device)
-            logger.info("外部 LoR_VP 初始化完成并移至设备")
-
-        elif args.prompt_method == 'lor_vp_lora':
-            logger.info(f"使用 lor_vp_lora 模式, LoRA rank: {args.lora_rank}")
+        elif args.prompt_method == 'dclt':
             is_vit = 'vit' in args.network.lower()
 
             processed_network = LoR_VP_with_LoRA(
@@ -315,8 +306,6 @@ def main():
                 is_vit=is_vit,
                 # lora_target_blocks = [8,9,10,11]
             )
-            logger.info("LoR_VP_with_LoRA 包装完成，它管理内部VP")
-
         else:
             visual_prompt_for_custom_network = None
 
@@ -406,7 +395,7 @@ def main():
                         module_to_update = network
 
                     base_model_for_iter_mapping = None
-                    if args.prompt_method == 'lor_vp_lora' and use_pure_for_lora_ilm_flm_mapping_experiment and \
+                    if args.prompt_method == 'dclt' and use_pure_for_lora_ilm_flm_mapping_experiment and \
                             pure_base_model_for_initial_mapping is not None:
                         base_model_for_iter_mapping = pure_base_model_for_initial_mapping
 
