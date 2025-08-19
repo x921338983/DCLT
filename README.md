@@ -2,17 +2,22 @@
 
 This repository includes the reference code for paper: 
 
-> **Dynamic Collaborative Low-Rank Tuning for Efficient Model Adaptation**
+**Dynamic Collaborative Low-Rank Tuning for Efficient Model Adaptation**
 
-## Install Requirements: 
+## Install Requirements
 ```
-conda create -n LoR-VP python=3.10
-conda activate LoR-VP
+conda create -n DCLT python=3.10
+conda activate DCLT
 pip install -r requirements.txt
 ```
+## Train
+```
+run train.py
+```
 
-> ## Acknowledgment
-> This repo is extended from the excellent work LoR-VP. We thank the authors for releasing the codes.
+## Acknowledgment
+This repository is built upon the excellent work LoR-VP. We sincerely thank the authors for releasing their code and making their research publicly available.
+```bibtex
 @inproceedings{
 jin2025lorvp,
 title={LoR-{VP}: Low-Rank Visual Prompting for Efficient Vision Model Adaptation},
@@ -21,3 +26,4 @@ booktitle={The Thirteenth International Conference on Learning Representations},
 year={2025},
 url={https://openreview.net/forum?id=5btFIv2PNb}
 }
+```
