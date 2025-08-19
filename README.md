@@ -12,7 +12,8 @@ pip install -r requirements.txt
 ```
 ## Train
 ```
-run trainer/train.py
+cd trainer
+python train.py
 ```
 
 ## Acknowledgment
