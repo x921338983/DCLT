@@ -4,11 +4,12 @@ This repository includes the reference code for paper:
 
 > **Dynamic Collaborative Low-Rank Tuning for Efficient Model Adaptation**
 
-> **Install Requirements**
-> conda create -n DCLT python=3.10
-conda activate DCLT
+## Install Requirements: 
+```
+conda create -n LoR-VP python=3.10
+conda activate LoR-VP
 pip install -r requirements.txt
-
+```
 
 > ## Acknowledgment
 > This repo is extended from the excellent work LoR-VP. We thank the authors for releasing the codes.
